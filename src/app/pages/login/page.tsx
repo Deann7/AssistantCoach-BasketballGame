@@ -4,22 +4,42 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import { useRouter } from 'next/navigation';
+import { authAPI, ApiResponse, User } from '@/lib/api';
 
 const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const router = useRouter();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError('');
     
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      const response: ApiResponse<User> = await authAPI.login({
+        username,
+        password
+      });
+
+      if (response.success) {
+        // Store user data in localStorage (in production, consider using more secure storage)
+        localStorage.setItem('user', JSON.stringify(response.user));
+        
+        // Redirect to main menu
+        router.push('/gamePage/mainMenu');
+      } else {
+        setError(response.message || 'Login failed');
+      }    } catch (error: unknown) {
+      console.error('Login error:', error);
+      const errorObj = error as { message?: string };
+      setError(errorObj.message || 'Login failed. Please try again.');
+    } finally {
       setIsLoading(false);
-      // Handle login logic here
-      console.log('Login attempt with:', { username, password });
-    }, 1500);
+    }
   };
 
   return (
@@ -54,8 +74,13 @@ const Login = () => {
                 Assistant Coach
               </h2>
             </div>
+              <h3 className="text-2xl font-semibold mb-6 text-gray-800">Welcome Back!</h3>
             
-            <h3 className="text-2xl font-semibold mb-6 text-gray-800">Welcome Back!</h3>
+            {error && (
+              <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+                {error}
+              </div>
+            )}
             
             <form onSubmit={handleSubmit}>
               <div className="mb-6">

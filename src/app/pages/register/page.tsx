@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import { useRouter } from 'next/navigation';
+import { authAPI, ApiResponse, User } from '@/lib/api';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -14,6 +16,9 @@ const Register = () => {
     isAssistant: false
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const router = useRouter();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -23,16 +28,38 @@ const Register = () => {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError('');
+    setSuccess('');
     
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      const response: ApiResponse<User> = await authAPI.register({
+        username: formData.username,
+        email: formData.email,
+        password: formData.password,
+        age: parseInt(formData.age),
+        isAssistant: formData.isAssistant
+      });
+
+      if (response.success) {
+        setSuccess('Registration successful! Redirecting to login...');
+        
+        // Redirect to login page after 2 seconds
+        setTimeout(() => {
+          router.push('/pages/login');
+        }, 2000);
+      } else {
+        setError(response.message || 'Registration failed');
+      }      } catch (error: unknown) {
+        console.error('Registration error:', error);
+        const errorObj = error as { message?: string };
+        const errorMessage = errorObj?.message || 'Registration failed. Please try again.';
+        setError(errorMessage);
+      } finally {
       setIsLoading(false);
-      // Handle registration logic here
-      console.log('Registration with:', formData);
-    }, 1500);
+    }
   };
 
   // Animation variants
@@ -125,10 +152,31 @@ const Register = () => {
               Assistant Coach
             </h2>
           </div>
+            <h3 className="text-2xl font-semibold mb-6 text-gray-800">Create Account</h3>
           
-          <h3 className="text-2xl font-semibold mb-6 text-gray-800">Create Account</h3>
+          {error && (
+            <motion.div 
+              className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg"
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              {error}
+            </motion.div>
+          )}
           
-          <motion.form 
+          {success && (
+            <motion.div 
+              className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded-lg"
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              {success}
+            </motion.div>
+          )}
+          
+          <motion.form
             onSubmit={handleSubmit}
             variants={containerVariants}
             initial="hidden"
