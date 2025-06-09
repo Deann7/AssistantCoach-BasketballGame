@@ -50,6 +50,39 @@ export const authAPI = {
       const axiosError = error as { response?: { data?: unknown } };
       throw axiosError.response?.data || { success: false, message: 'API test failed' };
     }
+  },
+
+  // Delete all users
+  deleteAllUsers: async () => {
+    try {
+      const response = await api.delete('/auth/delete-all-users');
+      return response.data;
+    } catch (error: unknown) {
+      const axiosError = error as { response?: { data?: unknown } };
+      throw axiosError.response?.data || { success: false, message: 'Failed to delete all users' };
+    }
+  },
+
+  // Get coach emotions
+  getCoachEmotions: async (userId: string) => {
+    try {
+      const response = await api.get(`/auth/coach-emotions/${userId}`);
+      return response.data;
+    } catch (error: unknown) {
+      const axiosError = error as { response?: { data?: unknown } };
+      throw axiosError.response?.data || { success: false, message: 'Failed to get coach emotions' };
+    }
+  },
+
+  // Update coach emotions after game
+  updateEmotions: async (userId: string, result: 'win' | 'loss') => {
+    try {
+      const response = await api.post(`/auth/update-emotions/${userId}`, { result });
+      return response.data;
+    } catch (error: unknown) {
+      const axiosError = error as { response?: { data?: unknown } };
+      throw axiosError.response?.data || { success: false, message: 'Failed to update emotions' };
+    }
   }
 };
 

@@ -1,5 +1,5 @@
 ﻿'use client'
 
-import GamePlay from '@/components/GameUI'
+import GamePlayEnhanced from '@/components/GameUIEnhanced'
 
-export default GamePlay
+export default GamePlayEnhanced

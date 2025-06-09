@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import MusicPlayer from '@/components/MusicPlayer';
-import { User, teamsAPI, scheduleAPI } from '@/lib/api';
+import { User, teamsAPI, scheduleAPI, authAPI } from '@/lib/api';
+import StarRating from '@/components/StarRating';
 
 interface Fixture {
   id: number;
@@ -18,27 +19,38 @@ const MainMenu = () => {
   const [coachName, setCoachName] = useState<string>("Coach");
   const [isClient, setIsClient] = useState(false);
   const [fixtures, setFixtures] = useState<Fixture[]>([]);
+  const [emotionData, setEmotionData] = useState({
+    goodEmotion: 50,
+    badEmotion: 50,
+    satisfaction: 0
+  });
   const router = useRouter();
-  
-  // Function to handle logout
-  const handleLogout = () => {
-    localStorage.removeItem('user');
-    router.push('/pages/login');
+ 
+
+
+  // Function to load coach emotions
+  const loadCoachEmotions = async (userId: string) => {
+    try {
+      const response = await authAPI.getCoachEmotions(userId);
+      if (response.success) {
+        setEmotionData({
+          goodEmotion: response.goodEmotion,
+          badEmotion: response.badEmotion,
+          satisfaction: response.satisfaction
+        });
+      }
+    } catch (error) {
+      console.error('Error loading coach emotions:', error);
+    }
   };
 
   // Handle Game Play click - save next fixture to localStorage
   const handleGamePlayClick = () => {
     if (fixtures.length > 0) {
       localStorage.setItem('nextFixture', JSON.stringify(fixtures[0]));
-    }
-  };
+    }  };
 
-  // Coach trust status - you can modify these values or fetch from API
-  const coachTrustData = {
-    goodEmotion: 75, // 0-100 scale
-    badEmotion: 25,  // 0-100 scale
-    satisfaction: 85 // 0-100 scale
-  };  useEffect(() => {
+  useEffect(() => {
     // This helps with hydration issues
     setIsClient(true);
     
@@ -48,6 +60,8 @@ const MainMenu = () => {
       if (storedUser) {
         const user: User = JSON.parse(storedUser);
         setCoachName(user.username);
+        // Load coach emotions
+        loadCoachEmotions(user.id);
       } else {
         // If no user data found, redirect to login
         router.push('/pages/login');
@@ -303,16 +317,6 @@ const MainMenu = () => {
           className="text-center mb-12" 
           variants={itemVariants}
         >
-            <div className='fixed top-4 left-4 z-50 flex items-center gap-4'>
-            <motion.button
-              onClick={handleLogout}
-              className="bg-red-500/80 hover:bg-red-600 backdrop-blur-lg px-4 py-2 rounded-xl text-white font-semibold border border-red-300/20 transition-all"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              Logout
-            </motion.button>
-            </div>
 
 
           <div className="flex justify-center mb-6">
@@ -412,12 +416,12 @@ const MainMenu = () => {
               height={200} 
             />
           </div>
-          
-          <motion.div 
+            <motion.div 
             className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20 shadow-xl flex-grow max-w-2xl"
             variants={itemVariants}
-          >            <h3 className="text-2xl font-bold text-white mb-6 text-center">
-             Emotion Bar
+          >
+            <h3 className="text-2xl font-bold text-white mb-6 text-center">
+             Coach John Doe - Emotion Status
             </h3>
             
             <div className='grid grid-cols-2 gap-6'>
@@ -431,10 +435,10 @@ const MainMenu = () => {
                   <motion.div 
                     className="h-full bg-gradient-to-r from-green-400 to-green-600 rounded-full flex items-center justify-center"
                     initial={{ width: 0 }}
-                    animate={{ width: `${coachTrustData.goodEmotion}%` }}
+                    animate={{ width: `${emotionData.goodEmotion}%` }}
                     transition={{ duration: 1.5, delay: 0.5 }}
                   >
-                    <span className="text-white text-sm font-bold">{coachTrustData.goodEmotion}%</span>
+                    <span className="text-white text-sm font-bold">{emotionData.goodEmotion}%</span>
                   </motion.div>
                 </div>
               </div>
@@ -449,26 +453,23 @@ const MainMenu = () => {
                   <motion.div 
                     className="h-full bg-gradient-to-r from-red-400 to-red-600 rounded-full flex items-center justify-center"
                     initial={{ width: 0 }}
-                    animate={{ width: `${coachTrustData.badEmotion}%` }}
+                    animate={{ width: `${emotionData.badEmotion}%` }}
                     transition={{ duration: 1.5, delay: 0.7 }}
                   >
-                    <span className="text-white text-sm font-bold">{coachTrustData.badEmotion}%</span>
+                    <span className="text-white text-sm font-bold">{emotionData.badEmotion}%</span>
                   </motion.div>
                 </div>
               </div>
-              </div>
+            </div>
              
-              {/* Satisfaction Level */}
+            {/* Satisfaction Level with Star Rating */}
             <div className="mt-6 text-center">
-              <p className="text-gray-300 text-sm mb-2">Satisfaction Level</p>
-              <div className="flex items-center justify-center space-x-2">
-                <span className="text-3xl">⭐</span>
-                <span className="text-2xl font-bold text-orange-300">
-                  {coachTrustData.satisfaction}%
-                </span>
+              <p className="text-gray-300 text-sm mb-3">Satisfaction Level</p>
+              <div className="flex items-center justify-center">
+                <StarRating satisfaction={emotionData.satisfaction} size={32} />
               </div>
             </div>
-          </motion.div>    
+          </motion.div>
 
          
         </div>
