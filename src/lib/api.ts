@@ -188,6 +188,36 @@ export const teamsAPI = {
       const axiosError = error as { response?: { data?: unknown } };
       throw axiosError.response?.data || { success: false, message: 'Failed to update team record' };
     }
+  },
+
+  // Clean up user data (remove old leagues, teams, schedules)
+  cleanupUserData: async (userId: string) => {
+    try {
+      const response = await api.delete(`/teams/cleanup-user/${userId}`);
+      return response.data;
+    } catch (error: unknown) {
+      console.error('Error cleaning up user data:', error);
+      const axiosError = error as { response?: { data?: { message?: string } } };
+      return { 
+        success: false, 
+        message: axiosError.response?.data?.message || 'Failed to cleanup user data' 
+      };
+    }
+  },
+
+  // Clean up all test users (for development)
+  cleanupTestUsers: async () => {
+    try {
+      const response = await api.delete('/teams/cleanup-test-users');
+      return response.data;
+    } catch (error: unknown) {
+      console.error('Error cleaning up test users:', error);
+      const axiosError = error as { response?: { data?: { message?: string } } };
+      return { 
+        success: false, 
+        message: axiosError.response?.data?.message || 'Failed to cleanup test users' 
+      };
+    }
   }
 };
 
@@ -198,6 +228,7 @@ export const scheduleAPI = {
     try {
       const response = await api.post(`/schedule/generate/${userId}`);
       return response.data;
+      console.log(response.data)
     } catch (error: unknown) {
       const axiosError = error as { response?: { data?: unknown } };
       throw axiosError.response?.data || { success: false, message: 'Failed to generate schedule' };

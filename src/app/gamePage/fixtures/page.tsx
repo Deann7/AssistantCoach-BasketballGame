@@ -54,6 +54,7 @@ const Fixtures = () => {
   const [simulatingWeek, setSimulatingWeek] = useState<number | null>(null)
   const [showCreateSchedule, setShowCreateSchedule] = useState(false)
   const [creating, setCreating] = useState(false)
+  const [cleaningUp, setCleaningUp] = useState(false)
   const router = useRouter()
   useEffect(() => {
     loadScheduleData()
@@ -66,6 +67,7 @@ const Fixtures = () => {
 
       // Get user data
       const userDataString = localStorage.getItem('user')
+      console.log(userDataString)
       if (!userDataString) {
         setError('Please login first')
         router.push('/pages/login')
@@ -73,15 +75,36 @@ const Fixtures = () => {
       }
 
       const userData = JSON.parse(userDataString)
-      
-      // Try to get existing schedule
+      console.log(userData.id)
+        // Try to get existing schedule
       const scheduleResponse = await scheduleAPI.getLeagueSchedule(userData.id)
       
       if (scheduleResponse.success) {
-        setSchedule(scheduleResponse.schedule)
-        setTeams(scheduleResponse.teams)
-        setCurrentWeek(scheduleResponse.currentWeek || 1)
-        setSelectedWeek(scheduleResponse.currentWeek || 1)
+        // Check if schedule exists and has games
+        if (scheduleResponse.schedule && Object.keys(scheduleResponse.schedule).length > 0) {
+          setSchedule(scheduleResponse.schedule)
+          setTeams(scheduleResponse.teams)
+          setCurrentWeek(scheduleResponse.currentWeek || 1)
+          setSelectedWeek(scheduleResponse.currentWeek || 1)
+        } else {
+          // Schedule exists but is empty, try to generate it
+          console.log('Schedule exists but is empty, generating...')
+          const generateResponse = await scheduleAPI.generateSchedule(userData.id)
+          if (generateResponse.success) {
+            // Reload schedule data after generation
+            const newScheduleResponse = await scheduleAPI.getLeagueSchedule(userData.id)
+            if (newScheduleResponse.success && newScheduleResponse.schedule) {
+              setSchedule(newScheduleResponse.schedule)
+              setTeams(newScheduleResponse.teams)
+              setCurrentWeek(newScheduleResponse.currentWeek || 1)
+              setSelectedWeek(newScheduleResponse.currentWeek || 1)
+            } else {
+              setShowCreateSchedule(true)
+            }
+          } else {
+            setShowCreateSchedule(true)
+          }
+        }
       } else {
         // No schedule exists, show option to create
         setShowCreateSchedule(true)
@@ -108,6 +131,7 @@ const Fixtures = () => {
 
       // 1. Try to setup league/teams first
       const setupResponse = await teamsAPI.setupUserLeague(userData.id)
+      
 
       if (!setupResponse.success && setupResponse.message?.includes('already has an active league')) {
         // 2. If league exists, reset it
@@ -119,9 +143,7 @@ const Fixtures = () => {
       } else if (!setupResponse.success) {
         setError(setupResponse.message || 'Failed to setup league')
         return
-      }
-
-      // 3. Now try to generate the schedule
+      }      // 3. Now try to generate the schedule
       const response = await scheduleAPI.generateSchedule(userData.id)
 
       if (response.success) {
@@ -131,11 +153,46 @@ const Fixtures = () => {
         setError(response.message || 'Failed to create schedule')
       }
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error creating schedule:', error)
-      setError(error?.message || 'Failed to create schedule')
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create schedule'
+      setError(errorMessage)
     } finally {
       setCreating(false)
+    }
+  }
+
+  const cleanupUserData = async () => {
+    try {
+      setCleaningUp(true)
+      setError('')
+
+      const userDataString = localStorage.getItem('user')
+      if (!userDataString) return
+
+      const userData = JSON.parse(userDataString)
+      
+      const response = await teamsAPI.cleanupUserData(userData.id)
+      
+      if (response.success) {
+        // Show success message
+        setError(`Cleanup successful! Removed: ${response.deletedLeagues} leagues, ${response.deletedTeams} teams, ${response.deletedPlayers} players, ${response.deletedSchedules} schedules`)
+        
+        // Reset the page state
+        setSchedule({})
+        setTeams({})
+        setCurrentWeek(1)
+        setSelectedWeek(1)
+        setShowCreateSchedule(true)
+      } else {
+        setError(response.message || 'Failed to cleanup user data')
+      }
+
+    } catch (error) {
+      console.error('Error cleaning up user data:', error)
+      setError('Failed to cleanup user data')
+    } finally {
+      setCleaningUp(false)
     }
   }
 
@@ -177,25 +234,30 @@ const Fixtures = () => {
         await loadScheduleData() // Reload to see playoffs
       } else {
         setError(response.message || 'Failed to generate playoffs')
-      }
-
-    } catch (error) {
+      }    } catch (error) {
       console.error('Error generating playoffs:', error)
       setError('Failed to generate playoffs')
     }
   }
 
   const getTeamDisplay = (teamId: number) => {
-    const team = teams[teamId]
-    if (!team) return { name: 'Unknown', logo: '🏀', color: 'from-gray-500 to-slate-600' }
+    // Try different ways to find the team since the key could be number or string
+    let team: Team | undefined = teams[teamId];
+    if (!team) {
+      // Convert teamId to string to check string keys
+      const teamIdAsString = String(teamId);
+      team = teams[teamIdAsString as unknown as number];
+    }
+    if (!team) team = Object.values(teams).find((t: Team) => t.teamId === teamId);
+    if (!team) return { name: 'Unknown', logo: '🏀', color: 'from-gray-500 to-slate-600', isUser: false };
     
-    const display = TEAM_DISPLAY_DATA[team.teamName] || { logo: '🏀', color: 'from-gray-500 to-slate-600' }
+    const display = TEAM_DISPLAY_DATA[team.teamName] || { logo: '🏀', color: 'from-gray-500 to-slate-600' };
     return {
       name: team.teamName,
       logo: display.logo,
       color: display.color,
       isUser: team.isUserTeam
-    }
+    };
   }
 
   const formatGameDate = (dateString: string) => {
@@ -214,7 +276,6 @@ const Fixtures = () => {
       return weekGames.every(game => game.isCompleted)
     })
   }
-
   const hasPlayoffs = () => {
     return schedule[6] && schedule[6].length > 0
   }
@@ -235,30 +296,41 @@ const Fixtures = () => {
             className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-          >
-            <h1 className="text-3xl font-bold text-white mb-6">🏀 Create League Schedule</h1>
+          >            <h1 className="text-3xl font-bold text-white mb-6">🏀 Create League Schedule</h1>
             <p className="text-gray-300 mb-8">
               Generate a comprehensive 5-week tournament schedule where each team plays every other team once, 
               followed by playoffs between the top 2 teams.
+              <br /><br />
+              If you have previous league data that needs to be cleaned up, use the &ldquo;Reset Data&rdquo; button to remove old leagues, teams, and schedules.
             </p>
             
             {error && (
               <div className="bg-red-500/20 border border-red-400/30 rounded-lg p-4 mb-6">
                 <p className="text-red-400">{error}</p>
               </div>
-            )}
-
-            <div className="flex justify-center gap-4">
+            )}            <div className="flex justify-center gap-4 flex-wrap">
               <button
                 onClick={createSchedule}
-                disabled={creating}
+                disabled={creating || cleaningUp}
                 className={`px-8 py-3 rounded-lg font-bold text-white ${
-                  creating 
+                  creating || cleaningUp
                     ? 'bg-gray-600 cursor-not-allowed' 
                     : 'bg-green-600 hover:bg-green-700'
                 } transition-colors`}
               >
                 {creating ? '🔄 Creating...' : '🏀 Create Schedule'}
+              </button>
+
+              <button
+                onClick={cleanupUserData}
+                disabled={creating || cleaningUp}
+                className={`px-8 py-3 rounded-lg font-bold text-white ${
+                  creating || cleaningUp
+                    ? 'bg-gray-600 cursor-not-allowed' 
+                    : 'bg-red-600 hover:bg-red-700'
+                } transition-colors`}
+              >
+                {cleaningUp ? '🧹 Cleaning...' : '🧹 Reset Data'}
               </button>
               
               <Link href="/gamePage/mainMenu">
@@ -307,9 +379,7 @@ const Fixtures = () => {
           <p className="text-xl text-gray-300">
             5-Week Tournament Schedule & Playoff System
           </p>
-        </motion.div>
-
-        {error && (
+        </motion.div>        {error && (
           <motion.div 
             className="bg-red-500/20 border border-red-400/30 rounded-lg p-4 mb-6 max-w-2xl mx-auto"
             initial={{ opacity: 0 }}
@@ -318,6 +388,31 @@ const Fixtures = () => {
             <p className="text-red-400 text-center">{error}</p>
           </motion.div>
         )}
+
+        {/* Admin Controls */}
+        <motion.div 
+          className="flex justify-center mb-6"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+        >
+          <div className="bg-white/10 backdrop-blur-lg rounded-xl p-4 border border-white/20">
+            <div className="flex gap-3 items-center">
+              <span className="text-white font-semibold">⚙️ Controls:</span>
+              <button
+                onClick={cleanupUserData}
+                disabled={cleaningUp}
+                className={`px-4 py-2 rounded-lg font-semibold text-white ${
+                  cleaningUp
+                    ? 'bg-gray-600 cursor-not-allowed' 
+                    : 'bg-red-600 hover:bg-red-700'
+                } transition-colors`}
+              >
+                {cleaningUp ? '🧹 Resetting...' : '🧹 Reset League'}
+              </button>
+            </div>
+          </div>
+        </motion.div>
 
         {/* Week Navigation */}
         <motion.div 
@@ -524,9 +619,20 @@ const Fixtures = () => {
                               📅 {formatGameDate(game.gameDate)}
                             </div>
                             {game.isUserGame && !game.isCompleted && (
-                              <div className="bg-purple-600 text-white px-3 py-1 rounded-full text-xs mt-2">
-                                🎮 YOUR GAME
-                              </div>
+                              <button
+                                className="mt-4 px-4 py-2 bg-purple-600 text-white rounded-lg font-bold"
+                                onClick={() => {
+                                  localStorage.setItem('currentScheduleId', game.scheduleId.toString());
+                                  localStorage.setItem('currentWeek', game.week.toString());
+                                  localStorage.setItem('homeTeamId', game.homeTeamId.toString());
+                                  localStorage.setItem('awayTeamId', game.awayTeamId.toString());
+                                  localStorage.setItem('homeTeamName', getTeamDisplay(game.homeTeamId).name);
+                                  localStorage.setItem('awayTeamName', getTeamDisplay(game.awayTeamId).name);
+                                  router.push('/gamePage/gamePlay');
+                                }}
+                              >
+                                🎮 Play Your Game
+                              </button>
                             )}
                           </div>
                           

@@ -250,7 +250,7 @@ const MainMenu = () => {
       title: 'Game Play',
       description: 'Start coaching your team in a live game',
       icon: '/court.svg',
-      link: '/gamePage/gamePlay'
+      link: '/gamePage/fixtures'
     },
     {
       title: 'Management Plan',
@@ -359,11 +359,7 @@ const MainMenu = () => {
                         <p className="text-gray-300">
                           {item.description}
                         </p>
-                        {fixtures.length > 0 && (
-                          <p className="text-orange-300 text-sm mt-1">
-                            Next: vs {fixtures[0].opponent} on {fixtures[0].date}
-                          </p>
-                        )}
+
                       </div>
                       <div className="text-white/70 group-hover:text-white group-hover:translate-x-1 transition-all">
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -417,7 +413,6 @@ const MainMenu = () => {
             />
           </div>
           
-          {/* Coach Trust Status - 3/4 width */}
           <motion.div 
             className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20 shadow-xl flex-grow max-w-2xl"
             variants={itemVariants}
@@ -473,65 +468,9 @@ const MainMenu = () => {
                 </span>
               </div>
             </div>
-          </motion.div>          {/* Fixtures Box - 1/4 width */}
-          <motion.div 
-            className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20 shadow-xl w-80 max-md:w-full flex-shrink-0"
-            variants={itemVariants}
-          >
-            <Link href="/gamePage/fixtures">
-              <div className="cursor-pointer hover:bg-white/5 rounded-xl p-2 -m-2 transition-all group">
-                <h3 className="text-xl font-bold text-white mb-4 text-center flex items-center justify-center group-hover:text-orange-300 transition-colors">
-                  📅 <span className="ml-2">Upcoming Fixtures</span>
-                </h3>
-                  <div className="space-y-3">
-                  {fixtures.length > 0 ? (
-                    fixtures.map((fixture, index) => (
-                      <motion.div
-                        key={fixture.id}
-                        className="bg-white/5 rounded-lg p-3 border border-white/10 group-hover:bg-white/10 transition-all"
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.5, delay: 0.8 + index * 0.1 }}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-2">
-                            <span className="text-purple-400 font-bold text-sm">💫</span>
-                            <span className="text-white text-sm font-medium">Imagine</span>
-                          </div>
-                          <span className="text-white/60 text-xs">VS</span>
-                          <div className="flex items-center space-x-2">
-                            <span className="text-lg">{fixture.opponentLogo}</span>
-                            <span className="text-white text-sm font-medium">{fixture.opponent}</span>
-                          </div>
-                        </div>
-                        <div className="text-center mt-2">
-                          <span className="text-gray-400 text-xs">{fixture.date}</span>
-                        </div>
-                      </motion.div>
-                    ))
-                  ) : (
-                    <motion.div
-                      className="bg-white/5 rounded-lg p-4 border border-white/10 text-center"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ duration: 0.5, delay: 0.8 }}
-                    >
-                      <div className="text-4xl mb-2">🏀</div>
-                      <div className="text-white/70 text-sm">Loading schedule...</div>
-                      <div className="text-gray-400 text-xs mt-1">Setting up your league</div>
-                    </motion.div>
-                  )}
-                </div>                <div className="mt-4 text-center">
-                  <motion.button
-                    className="text-orange-400 hover:text-orange-300 text-sm underline transition-colors group-hover:text-orange-200"
-                    whileHover={{ scale: 1.05 }}
-                  >
-                    {fixtures.length > 0 ? 'View Full Schedule' : 'View Schedule Setup'}
-                  </motion.button>
-                </div>
-              </div>
-            </Link>
-          </motion.div>
+          </motion.div>    
+
+         
         </div>
       </motion.div>
     </div>

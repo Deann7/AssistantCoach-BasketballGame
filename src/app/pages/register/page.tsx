@@ -42,22 +42,22 @@ const Register = () => {
         age: parseInt(formData.age),
         isAssistant: formData.isAssistant
       });
-
+      console.log(response)
       if (response.success) {
         setSuccess('Registration successful! Redirecting to login...');
         
         // Redirect to login page after 2 seconds
         setTimeout(() => {
           router.push('/pages/login');
-        }, 2000);
-      } else {
+        }, 2000);      } else {
         setError(response.message || 'Registration failed');
-      }      } catch (error: unknown) {
-        console.error('Registration error:', error);
-        const errorObj = error as { message?: string };
-        const errorMessage = errorObj?.message || 'Registration failed. Please try again.';
-        setError(errorMessage);
-      } finally {
+      }
+    } catch (error: unknown) {
+      console.error('Registration error:', error);
+      const errorObj = error as { message?: string };
+      const errorMessage = errorObj?.message || 'Registration failed. Please try again.';
+      setError(errorMessage);
+    } finally {
       setIsLoading(false);
     }
   };

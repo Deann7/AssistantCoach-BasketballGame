@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { teamsAPI, playersAPI, Player, Team } from '@/lib/api'
+import { teamsAPI, playersAPI, Player, Team, scheduleAPI } from '@/lib/api'
 import { PlayStyle } from '@/components/CoachPopup'
 
 // Interfaces
@@ -807,21 +807,6 @@ export const useGameEngine = () => {
           await teamsAPI.updateTeamRecord(awayTeam.teamId, 'win')
           await teamsAPI.updateTeamRecord(homeTeam.teamId, 'loss')
         }
-        
-        // After updating user's team record, trigger automatic league simulation
-        if (userData && userData.id) {
-          console.log('Triggering automatic league simulation for user:', userData.id)
-          try {
-            const simulationResponse = await teamsAPI.simulateUserLeague(userData.id)
-            if (simulationResponse.success) {
-              console.log('League simulation completed successfully')
-            } else {
-              console.warn('League simulation failed:', simulationResponse.message)
-            }
-          } catch (simulationError) {
-            console.error('Error during league simulation:', simulationError)
-          }
-        }
       }
     } catch (error) {
       console.error('Error updating team records:', error)
@@ -973,6 +958,29 @@ export const useGameEngine = () => {
     setShowCoachPopup(false)
     // Don't automatically start the game - let user manually press start
   }
+
+  // Add this function
+  const completeGameResult = async (homeScore: number, awayScore: number) => {
+    const scheduleId = localStorage.getItem('currentScheduleId');
+    if (!scheduleId) return;
+    try {
+      await scheduleAPI.completeGame({
+        scheduleId: Number(scheduleId),
+        homeScore,
+        awayScore,
+      });
+    } catch (err) {
+      console.error('Failed to complete game:', err);
+    }
+  };
+
+  // Call completeGameResult in a useEffect when gameEnded becomes true
+  useEffect(() => {
+    if (gameState.gameEnded) {
+      completeGameResult(gameState.homeScore, gameState.awayScore);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gameState.gameEnded]);
 
   return {
     // Game state

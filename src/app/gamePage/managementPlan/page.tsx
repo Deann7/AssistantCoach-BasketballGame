@@ -77,7 +77,7 @@ const ManagementPlan = () => {
           return;
         }        const userData = JSON.parse(userDataString);
         console.log('User data from localStorage:', userData);
-        const IMAGINE_TEAM_ID = 5;
+        const IMAGINE_TEAM_ID = 1;
 
         // Get players for team Imagine
         const playersResponse = await playersAPI.getPlayersByTeam(IMAGINE_TEAM_ID);
