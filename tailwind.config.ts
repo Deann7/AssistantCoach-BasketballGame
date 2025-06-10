@@ -12,6 +12,12 @@ export default {
         background: "var(--background)",
         foreground: "var(--foreground)",
       },
+      fontFamily: {
+        'burbank': ['Burbank Big Condensed', 'Arial Black', 'Arial', 'sans-serif'],
+      },
+      fontWeight: {
+        'burbank': '600',
+      },
     },
   },
   plugins: [],

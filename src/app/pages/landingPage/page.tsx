@@ -22,7 +22,7 @@ const LandingPage = () => {
   };
 
   return (
-    <div className="h-screen w-full flex flex-col items-center justify-between bg-gray-900 relative overflow-hidden">
+    <div className="h-screen w-full flex flex-col items-center justify-between bg-gray-900 font-burbank relative overflow-hidden">
       {/* Background image with darkened overlay */}
       <div className="absolute inset-0 w-screen h-screen">
         <Image

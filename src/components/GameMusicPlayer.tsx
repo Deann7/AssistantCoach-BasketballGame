@@ -7,17 +7,16 @@ interface MusicTrack {
   url: string;
 }
 
-const MusicPlayer = () => {
+const GameMusicPlayer = () => {
   const [isPlaying, setIsPlaying] = useState(false);
-  const [volume, setVolume] = useState(0.3);
+  const [volume, setVolume] = useState(0.2); // Lower volume for game
   const [isMuted, setIsMuted] = useState(false);
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
+  // Different tracks for game mode
   const tracks: MusicTrack[] = [
-    { title: 'Misty', url: '/music/Misty.mp3' },
-    { title: 'I Want to Hold Your Hand', url: '/music/IWantToHoldYourHand.mp3' },
-    { title: 'Come Together', url: '/music/ComeTogether.mp3' },
+    { title: 'Arena Intensity', url: '/music/BasketballAudio.mp3' },
 
   ];
 
@@ -81,11 +80,11 @@ const MusicPlayer = () => {
   };
 
   return (
-    <div className="fixed bottom-4 right-4 z-50">
+    <div className="fixed top-4 right-4 z-50">
       <div className="bg-black/80 backdrop-blur-sm rounded-full p-3 flex items-center space-x-3 shadow-lg">
         <button 
           onClick={togglePlay}
-          className="w-10 h-10 rounded-full bg-orange-500 hover:bg-orange-600 flex items-center justify-center text-white transition-colors"
+          className="w-10 h-10 rounded-full bg-blue-500 hover:bg-blue-600 flex items-center justify-center text-white transition-colors"
         >
           {isPlaying ? (
             <div className="w-3 h-3 flex space-x-1">
@@ -98,7 +97,7 @@ const MusicPlayer = () => {
         </button>
         
         <div className="flex items-center space-x-2">
-          <button onClick={toggleMute} className="text-white hover:text-orange-400">
+          <button onClick={toggleMute} className="text-white hover:text-blue-400">
             {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
           </button>
           <input
@@ -120,4 +119,4 @@ const MusicPlayer = () => {
   );
 };
 
-export default MusicPlayer;
+export default GameMusicPlayer;

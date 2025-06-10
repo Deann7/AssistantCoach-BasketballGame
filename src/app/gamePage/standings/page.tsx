@@ -320,65 +320,7 @@ const Standings = () => {
           </div>
         </motion.div>
 
-        {/* Tournament Info */}
-        <motion.div 
-          className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.4, duration: 0.6 }}
-        >
-          <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6 border border-white/20">
-            <h3 className="text-xl font-bold text-white mb-3 flex items-center">
-              <span className="mr-2">📅</span>
-              League Format
-            </h3>
-            <p className="text-gray-300">
-              Basketball League where teams compete throughout the season to climb the standings.
-            </p>
-          </div>
-          
-          <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6 border border-white/20">
-            <h3 className="text-xl font-bold text-white mb-3 flex items-center">
-              <span className="mr-2">🏀</span>
-              Teams
-            </h3>            <p className="text-gray-300">
-              {teams.length} teams competing including your team &ldquo;Imagine&rdquo; and {teams.length - 1} AI teams.
-            </p>
-          </div>
-          
-          <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6 border border-white/20">
-            <h3 className="text-xl font-bold text-white mb-3 flex items-center">
-              <span className="mr-2">🎯</span>
-              Goal
-            </h3>            <p className="text-gray-300">
-              Lead your team &ldquo;Imagine&rdquo; to the top of the standings and become champions!
-            </p>
-          </div>
-        </motion.div>
-
-        {/* Legend */}
-        <motion.div 
-          className="mt-8 bg-white/10 backdrop-blur-lg rounded-xl p-6 border border-white/20"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.6, duration: 0.6 }}
-        >
-          <h3 className="text-xl font-bold text-white mb-4">📝 Legend</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-            <div className="text-gray-300">
-              <span className="font-semibold text-white">W-L:</span> Wins-Losses
-            </div>
-            <div className="text-gray-300">
-              <span className="font-semibold text-white">Win %:</span> Win Percentage
-            </div>
-            <div className="text-gray-300">
-              <span className="font-semibold text-purple-300">🎮:</span> Your Team
-            </div>
-            <div className="text-gray-300">
-              <span className="font-semibold text-blue-300">🤖:</span> AI Teams
-            </div>
-          </div>
-        </motion.div>
+    
       </div>
     </div>
   )

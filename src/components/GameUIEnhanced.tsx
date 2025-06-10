@@ -4,7 +4,10 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useGameEngineEnhanced, GameState, GameEvent, GameTeam } from './GameEngineEnhanced'
 import CoachPopup from './CoachPopup'
+import GameMusicPlayer from './GameMusicPlayer'
 import { Player } from '@/lib/api'
+import { motion } from 'framer-motion'
+import Image from 'next/image'
 
 // Player Stats Component
 const PlayerStats = ({ homeTeam, awayTeam }: {
@@ -153,7 +156,6 @@ const LiveEvents = ({ gameEvents }: { gameEvents: GameEvent[] }) => {
       {gameEvents.length > 0 ? (        gameEvents.map((event) => (
           <div key={event.id} className="bg-gray-700/30 rounded-lg p-3 border-l-4 border-blue-400">
             <div className="flex justify-between items-start mb-1">
-              <span className="text-blue-400 font-bold text-xs">Q{event.quarter} - {event.time}</span>
               {event.points && (
                 <span className="bg-orange-500 text-white px-2 py-1 rounded text-xs font-bold">
                   +{event.points}
@@ -274,23 +276,39 @@ const GamePlayEnhanced = () => {
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 p-4">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
-        <Link href="/gamePage/mainMenu" className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors">
-          <span>←</span>
-          <span>Back to Menu</span>
-        </Link>
+        <div className="absolute top-8 left-8 z-20">
+          <Link href="/gamePage/mainMenu">
+            <motion.div
+              className="bg-white/10 backdrop-blur-lg hover:bg-white/20 p-3 rounded-xl border border-white/20 shadow-xl transition-all group cursor-pointer"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <Image 
+                src="/runner.svg" 
+                alt="Back to Main Menu" 
+                width={24} 
+                height={24} 
+                className="w-6 h-6 text-white group-hover:scale-110 transition-transform" 
+              />
+            </motion.div>
+          </Link>
+        </div>
         
         <h1 className="text-3xl font-bold text-white text-center">
           🏀 {homeTeam.teamName} vs {awayTeam.teamName}
         </h1>
         
-        <div className="w-32"></div> {/* Spacer for centering */}
+        <div className="w-32"></div> 
       </div>
 
       <div className="flex flex-col lg:flex-row gap-6">
         {/* Main Game Area */}
         <div className="flex-1">
           <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700">
-            {/* Tab Navigation */}
+
             <div className="flex space-x-2 mb-6">
               <button
                 onClick={() => setActiveTab('commentary')}
@@ -455,9 +473,7 @@ const GamePlayEnhanced = () => {
           <div className="w-3 h-3 bg-white rounded-full animate-pulse"></div>
           <span>🔄 Simulation Running</span>
         </div>
-      )}
-
-      {/* Coach Popup */}
+      )}      {/* Coach Popup */}
       {showCoachPopup && (
         <CoachPopup
           isOpen={showCoachPopup}
@@ -465,6 +481,9 @@ const GamePlayEnhanced = () => {
           onClose={skipCoachPopup}
         />
       )}
+
+      {/* Game Music Player */}
+      <GameMusicPlayer />
     </div>
   )
 }

@@ -5,8 +5,17 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import MusicPlayer from '@/components/MusicPlayer';
-import { User, teamsAPI, scheduleAPI, authAPI } from '@/lib/api';
 import StarRating from '@/components/StarRating';
+import { authAPI, teamsAPI, scheduleAPI } from '@/lib/api';
+
+// Define User interface locally to avoid import conflicts
+interface User {
+  id: string;
+  username: string;
+  email: string;
+  age: number;
+  isAssistant: boolean;
+}
 
 interface Fixture {
   id: number;
@@ -235,9 +244,7 @@ const MainMenu = () => {
 
     generateFixtures();
   }, [router]);
-  // Note: router is used only for error redirects, including it would cause infinite loops
 
-  // Animation variants
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -292,7 +299,9 @@ const MainMenu = () => {
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-blue-900 via-indigo-800 to-purple-900 px-4 py-12 overflow-hidden">
       {/* Music Player Component */}
+      <div className='fixed bottom-4 right-4 z-50'>
       <MusicPlayer />
+      </div>
       
       {/* Basketball background elements */}
       <div className="absolute -top-20 -right-20 w-64 h-64 rounded-full bg-orange-500/10 blur-3xl" />
@@ -328,10 +337,10 @@ const MainMenu = () => {
               className="animate-bounce" 
             />
           </div>
-          <h1 className="text-4xl md:text-6xl font-bold text-white mb-4">
+          <h1 className="text-4xl md:text-6xl font-bold text-white mb-4 font-burbank">
             Assistant Coach Dashboard
           </h1>
-          <p className="text-xl md:text-2xl text-orange-300 font-semibold">
+          <p className="text-xl md:text-2xl text-orange-300 font-burbank">
             Welcome Back, Assistant Coach {coachName}
           </p>
         </motion.div>        {/* Menu grid */}

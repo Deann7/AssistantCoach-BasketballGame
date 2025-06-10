@@ -7,7 +7,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { useRouter } from 'next/navigation'
-import { playersAPI, Player as APIPlayer } from '@/lib/api'
+import { playersAPI, teamsAPI, Player as APIPlayer } from '@/lib/api'
 
 // Enum definitions
 enum Position {
@@ -77,21 +77,28 @@ const ManagementPlan = () => {
           return;
         }        const userData = JSON.parse(userDataString);
         console.log('User data from localStorage:', userData);
-        const IMAGINE_TEAM_ID = 1;
 
-        // Get players for team Imagine
-        const playersResponse = await playersAPI.getPlayersByTeam(IMAGINE_TEAM_ID);
-        console.log('Imagine team players response:', playersResponse);
-        if (!playersResponse.success) {
-          setError('Failed to load Imagine team players');
+        // Get user's team standings to find their "Imagine" team ID dynamically
+        const standingsResponse = await teamsAPI.getUserStandings(userData.id);
+        if (!standingsResponse.success) {
+          setError('Failed to load team standings');
+          return;
+        }        // Find the user's "Imagine" team from standings
+        const imagineTeam = standingsResponse.standings.find((team: { teamName: string; teamId: number }) => team.teamName === 'Imagine');
+        if (!imagineTeam) {
+          setError('Imagine team not found. Please setup your league first.');
           return;
         }
 
-        setUserTeamId(IMAGINE_TEAM_ID);
+        const userTeamId = imagineTeam.teamId;
+        console.log('Found user Imagine team ID:', userTeamId);
+
+        // Get players for the user's team
+        const playersResponse = await playersAPI.getPlayersByTeam(userTeamId);        console.log('Imagine team players response:', playersResponse);
         if (!playersResponse.success) {
           setError('Failed to load Imagine team players');
           return;
-        }
+        }        setUserTeamId(userTeamId);
 
         // Convert backend players to frontend format
         const backendPlayers = playersResponse.players;
@@ -118,7 +125,7 @@ const ManagementPlan = () => {
       
       let draggedPlayer: Player;
       
-      // Get the dragged player
+  
       if (fromStarter) {
         draggedPlayer = starters[dragIndex];
       } else {
