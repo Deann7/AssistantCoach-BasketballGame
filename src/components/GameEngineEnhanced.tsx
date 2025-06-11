@@ -138,8 +138,6 @@ export const useGameEngineEnhanced = () => {
         
         // Store user data in state for later use
         setUserData(user)
-
-        // Get next fixture from localStorage (set by mainMenu) or use default
         const nextFixture = localStorage.getItem('nextFixture')
         const fixture = nextFixture ? JSON.parse(nextFixture) : {
           id: 1,
@@ -162,7 +160,6 @@ export const useGameEngineEnhanced = () => {
           console.warn('Failed to load teams from API, using mock data')
         }
 
-        // If teams not found, create mock teams
         if (!homeTeamData) {
           homeTeamData = {
             teamId: 1,
@@ -557,16 +554,14 @@ export const useGameEngineEnhanced = () => {
           const newTimeLeft = prev.timeLeft - 1
 
           if (newTimeLeft <= 0) {
-            // End of quarter logic
             if (prev.quarter < 4) {
-              // Pause the game and stop the interval
               setIsSimulating(false)
               if (intervalRef.current) {
                 clearInterval(intervalRef.current)
                 intervalRef.current = null
               }
               
-              // Show coach popup only in Q2
+  
               if (prev.quarter === 2) {
                 setShowCoachPopup(true)
               }
@@ -617,8 +612,8 @@ export const useGameEngineEnhanced = () => {
           }
         })
 
-        // Generate game events less frequently - every 4-6 seconds for more realistic pacing
-        if (Math.random() < 0.15) { // 15% chance per second (slower paced)
+   
+        if (Math.random() < 0.08) { // 8% chance per second (slower paced)
           const event: GameEvent = {
             id: Date.now(),
             ...generateGameEvent(),

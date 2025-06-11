@@ -676,48 +676,7 @@ const Fixtures = () => {
           </motion.div>
         </AnimatePresence>
 
-        {/* Tournament Info */}
-        <motion.div 
-          className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-        >
-          <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6 border border-white/20">
-            <h3 className="text-xl font-bold text-white mb-3 flex items-center">
-              <span className="mr-2">📅</span>
-              Tournament Format
-            </h3>
-            <p className="text-gray-300">
-              5-week round-robin tournament where each team plays every other team once, 
-              followed by championship finals between top 2 teams.
-            </p>
-          </div>
-          
-          <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6 border border-white/20">
-            <h3 className="text-xl font-bold text-white mb-3 flex items-center">
-              <span className="mr-2">🏀</span>
-              Current Status
-            </h3>
-            <p className="text-gray-300">
-              Currently in Week {currentWeek} of the regular season. 
-              {isRegularSeasonComplete() 
-                ? ' Regular season completed!' 
-                : ` ${5 - currentWeek + 1} weeks remaining.`}
-            </p>
-          </div>
-          
-          <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6 border border-white/20">
-            <h3 className="text-xl font-bold text-white mb-3 flex items-center">
-              <span className="mr-2">🎯</span>
-              Your Team
-            </h3>
-            <p className="text-gray-300">
-              Games marked with 🎮 are your team&apos;s matches. 
-              AI games are automatically simulated when you complete your games.
-            </p>
-          </div>
-        </motion.div>
+       
       </div>
     </div>
   )

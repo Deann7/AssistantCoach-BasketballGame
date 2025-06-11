@@ -107,9 +107,6 @@ const GameCommentary = ({ gameState, gameEvents }: {
         {gameEvents.length > 0 ? (
           <div className="space-y-3 max-h-40 overflow-y-auto">            {gameEvents.slice(0, 5).map((event) => (
               <div key={event.id} className="flex items-start space-x-3 text-sm">
-                <div className="text-gray-400 font-mono w-12 flex-shrink-0">
-                  {event.time}
-                </div>
                 <div className="text-gray-300 flex-1">
                   <span className="font-semibold">Q{event.quarter}:</span> {event.description || event.event}
                 </div>
