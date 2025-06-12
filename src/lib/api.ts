@@ -1,10 +1,9 @@
 import axios from 'axios';
 
-// Base URL for your backend API - uses environment variable or fallback to localhost
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
 const FULL_API_URL = `${API_BASE_URL}/api`;
 
-// Create axios instance with default config
+
 const api = axios.create({
   baseURL: FULL_API_URL,
   headers: {
@@ -12,9 +11,7 @@ const api = axios.create({
   },
 });
 
-// Authentication API calls
 export const authAPI = {
-  // Register new user
   register: async (userData: {
     username: string;
     email: string;
