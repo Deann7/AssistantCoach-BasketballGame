@@ -122,7 +122,6 @@ export const useGameEngineEnhanced = () => {
   
   // Ref for game timer
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
-
   // Load game data on component mount
   useEffect(() => {
     const loadGameData = async () => {
@@ -133,33 +132,110 @@ export const useGameEngineEnhanced = () => {
         const storedUser = localStorage.getItem('user')
         if (!storedUser) {
           throw new Error('No user data found. Please login again.')
-        }
-        const user = JSON.parse(storedUser)
+        }        const user = JSON.parse(storedUser)
         
         // Store user data in state for later use
         setUserData(user)
-        const nextFixture = localStorage.getItem('nextFixture')
-        const fixture = nextFixture ? JSON.parse(nextFixture) : {
-          id: 1,
-          opponent: 'Riverlake Eagles',
-          opponentLogo: '🦅',
-          date: 'Today'
-        }
 
-        // Try to get teams data, if fails, create mock data
-        let homeTeamData, awayTeamData
-        try {
-          const teamsResponse = await teamsAPI.getUserStandings(user.id)
+        // First, check if there's a specific game scheduled (from fixtures page)
+        const currentScheduleId = localStorage.getItem('currentScheduleId')
+        const homeTeamId = localStorage.getItem('homeTeamId')
+        const awayTeamId = localStorage.getItem('awayTeamId')
+        const homeTeamName = localStorage.getItem('homeTeamName')
+        const awayTeamName = localStorage.getItem('awayTeamName')
+
+        let nextGame = null
+        let homeTeamData: Team | null = null
+        let awayTeamData: Team | null = null
+
+        // If we have specific game data from fixtures, use that
+        if (currentScheduleId && homeTeamId && awayTeamId && homeTeamName && awayTeamName) {
+          console.log('Using game data from fixtures page')
           
-          if (teamsResponse.success && teamsResponse.standings.length > 0) {
-            const allTeams = teamsResponse.standings
-            homeTeamData = allTeams.find((team: Team) => team.teamName === 'Imagine')
-            awayTeamData = allTeams.find((team: Team) => team.teamName === fixture.opponent)
+          // Try to get full team data from API first
+          try {
+            const teamsResponse = await teamsAPI.getUserStandings(user.id)
+            if (teamsResponse.success && teamsResponse.standings.length > 0) {
+              const allTeams = teamsResponse.standings
+              const homeFromApi = allTeams.find((team: Team) => team.teamId === parseInt(homeTeamId))
+              const awayFromApi = allTeams.find((team: Team) => team.teamId === parseInt(awayTeamId))
+              
+              homeTeamData = homeFromApi || {
+                teamId: parseInt(homeTeamId),
+                teamName: homeTeamName,
+                wins: 0,
+                lose: 0
+              }
+              awayTeamData = awayFromApi || {
+                teamId: parseInt(awayTeamId),
+                teamName: awayTeamName,
+                wins: 0,
+                lose: 0
+              }
+            } else {
+              // Fallback to localStorage data
+              homeTeamData = {
+                teamId: parseInt(homeTeamId),
+                teamName: homeTeamName,
+                wins: 0,
+                lose: 0
+              }
+              awayTeamData = {
+                teamId: parseInt(awayTeamId),
+                teamName: awayTeamName,
+                wins: 0,
+                lose: 0
+              }
+            }
+          } catch {
+            // Fallback to localStorage data
+            homeTeamData = {
+              teamId: parseInt(homeTeamId),
+              teamName: homeTeamName,
+              wins: 0,
+              lose: 0
+            }
+            awayTeamData = {
+              teamId: parseInt(awayTeamId),
+              teamName: awayTeamName,
+              wins: 0,
+              lose: 0
+            }
           }
-        } catch {
-          console.warn('Failed to load teams from API, using mock data')
-        }
-
+        } else {
+          // Otherwise, get next game from API (same source as fixtures)
+          try {
+            const nextGameResponse = await scheduleAPI.getNextGame(user.id)
+            if (nextGameResponse.success && nextGameResponse.nextGame) {
+              nextGame = nextGameResponse.nextGame
+              homeTeamData = nextGameResponse.homeTeam
+              awayTeamData = nextGameResponse.awayTeam
+              
+              // Store current game info for completion later
+              localStorage.setItem('currentScheduleId', nextGame.scheduleId.toString())
+            }
+          } catch (error) {
+            console.warn('Failed to get next game from API:', error)
+          }
+        }        // If no scheduled game, try to get teams from standings as fallback
+        if (!homeTeamData || !awayTeamData) {
+          try {
+            const teamsResponse = await teamsAPI.getUserStandings(user.id)
+            
+            if (teamsResponse.success && teamsResponse.standings.length > 0) {
+              const allTeams = teamsResponse.standings
+              if (!homeTeamData) {
+                homeTeamData = allTeams.find((team: Team) => team.teamName === 'Imagine')
+              }
+              if (!awayTeamData) {
+                // Use first opponent from standings if no scheduled game
+                awayTeamData = allTeams.find((team: Team) => team.teamName !== 'Imagine' && team.teamName !== homeTeamData?.teamName)
+              }
+            }
+          } catch {
+            console.warn('Failed to load teams from API, using mock data')
+          }
+        }// Create fallback data if no API data available
         if (!homeTeamData) {
           homeTeamData = {
             teamId: 1,
@@ -172,7 +248,7 @@ export const useGameEngineEnhanced = () => {
         if (!awayTeamData) {
           awayTeamData = {
             teamId: 2,
-            teamName: fixture.opponent,
+            teamName: 'Riverlake Eagles', // Default opponent as fallback only
             wins: 0,
             lose: 0
           }
@@ -658,12 +734,19 @@ export const useGameEngineEnhanced = () => {
       }
     }
   }, [])
-
   // New game function
   const newGame = () => {
     if (intervalRef.current) {
       clearInterval(intervalRef.current)
     }
+    
+    // Clean up localStorage data from fixtures
+    localStorage.removeItem('currentScheduleId')
+    localStorage.removeItem('currentWeek')
+    localStorage.removeItem('homeTeamId')
+    localStorage.removeItem('awayTeamId')
+    localStorage.removeItem('homeTeamName')
+    localStorage.removeItem('awayTeamName')
     
     setGameState({
       homeScore: 0,
@@ -713,12 +796,21 @@ export const useGameEngineEnhanced = () => {
       console.error('Failed to complete game:', err)
     }
   }
-
   // Call completeGameResult and update emotions when gameEnded becomes true
   useEffect(() => {
     if (gameState.gameEnded && userData) {
       // Complete the game in the database
       completeGameResult(gameState.homeScore, gameState.awayScore)
+      
+      // Clean up game data from localStorage after completion
+      setTimeout(() => {
+        localStorage.removeItem('currentScheduleId')
+        localStorage.removeItem('currentWeek')
+        localStorage.removeItem('homeTeamId')
+        localStorage.removeItem('awayTeamId')
+        localStorage.removeItem('homeTeamName')
+        localStorage.removeItem('awayTeamName')
+      }, 2000) // Wait 2 seconds before cleanup to ensure game completion is processed
       
       // Update coach emotions based on game result
       const updateEmotions = async () => {

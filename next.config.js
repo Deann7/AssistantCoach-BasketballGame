@@ -8,9 +8,8 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  output: 'export',
-  // Set the output directory to 'out'
-  distDir: 'out',
+  // Removed output: 'export' and distDir: 'out' for Vercel deployment
+  // Vercel handles the build and deployment automatically
 };
 
 module.exports = nextConfig;

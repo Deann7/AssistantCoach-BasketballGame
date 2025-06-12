@@ -31,6 +31,50 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 
 ## Deploy on Vercel
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Prerequisites
+1. Create a [Vercel account](https://vercel.com/signup)
+2. Install the [Vercel CLI](https://vercel.com/cli) (optional but recommended)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Deployment Steps
+
+#### Option 1: Deploy via Vercel Dashboard (Recommended)
+1. Push your code to a Git repository (GitHub, GitLab, or Bitbucket)
+2. Go to [Vercel Dashboard](https://vercel.com/new)
+3. Import your repository
+4. Configure environment variables if needed:
+   - `NEXT_PUBLIC_API_BASE_URL`: Your backend API URL
+5. Click "Deploy"
+
+#### Option 2: Deploy via Vercel CLI
+```bash
+# Install Vercel CLI globally
+npm install -g vercel
+
+# Login to Vercel
+vercel login
+
+# Deploy (run from project root)
+vercel
+
+# For production deployment
+vercel --prod
+```
+
+### Environment Variables
+Copy `.env.example` to `.env.local` and update the values:
+```bash
+cp .env.example .env.local
+```
+
+### Build Configuration
+The project is configured with:
+- `vercel.json` for Vercel-specific settings
+- `next.config.js` optimized for Vercel deployment
+- Static asset optimization enabled
+
+### Troubleshooting
+- Ensure your backend API is accessible from the internet
+- Check that all environment variables are properly set in Vercel dashboard
+- Verify build logs in Vercel dashboard for any errors
+
+For more details, check out the [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying).

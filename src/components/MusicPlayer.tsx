@@ -41,7 +41,6 @@ const MusicPlayer = () => {
           });
       }
 
-      // Handle track end
       audioRef.current.addEventListener('ended', () => {
         const nextIndex = (currentTrackIndex + 1) % tracks.length;
         setCurrentTrackIndex(nextIndex);
@@ -56,8 +55,8 @@ const MusicPlayer = () => {
         audioRef.current = null;
       }
     };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
+  }, []); 
+  
   // Update volume
   useEffect(() => {
     if (audioRef.current) {
