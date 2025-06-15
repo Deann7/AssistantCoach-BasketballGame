@@ -26,11 +26,8 @@ const Login = () => {
       });
 
       if (response.success) {
-        // Store user data in localStorage (in production, consider using more secure storage)
         localStorage.setItem('user', JSON.stringify(response.user));
         console.log(response.user);
-        
-        // Redirect to main menu
         router.push('/gamePage/mainMenu');
       } else {
         setError(response.message || 'Login failed');

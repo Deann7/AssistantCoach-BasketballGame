@@ -8,7 +8,6 @@ import MusicPlayer from '@/components/MusicPlayer';
 import StarRating from '@/components/StarRating';
 import { authAPI, teamsAPI, scheduleAPI } from '@/lib/api';
 
-// Define User interface locally to avoid import conflicts
 interface User {
   id: string;
   username: string;
@@ -34,10 +33,6 @@ const MainMenu = () => {
     satisfaction: 0
   });
   const router = useRouter();
- 
-
-
-  // Function to load coach emotions
   const loadCoachEmotions = async (userId: string) => {
     try {
       const response = await authAPI.getCoachEmotions(userId);

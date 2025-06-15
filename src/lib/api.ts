@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://assistant-coach-be.osc-fr1.scalingo.io';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 const FULL_API_URL = `${API_BASE_URL}/api`;
 
 

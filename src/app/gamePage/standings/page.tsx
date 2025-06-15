@@ -15,7 +15,6 @@ interface StandingsTeam {
   logo: string
 }
 
-// Move team display data outside component to prevent recreation
 const TEAM_DISPLAY_DATA: Record<string, { color: string; logo: string }> = {
   'Riverlake Eagles': {
     color: "from-yellow-500 to-orange-600",

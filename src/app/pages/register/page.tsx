@@ -45,8 +45,6 @@ const Register = () => {
       console.log(response)
       if (response.success) {
         setSuccess('Registration successful! Redirecting to login...');
-        
-        // Redirect to login page after 2 seconds
         setTimeout(() => {
           router.push('/pages/login');
         }, 2000);      } else {

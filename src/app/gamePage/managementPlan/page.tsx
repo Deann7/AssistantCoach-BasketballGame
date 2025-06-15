@@ -8,8 +8,6 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { useRouter } from 'next/navigation'
 import { playersAPI, teamsAPI, Player as APIPlayer } from '@/lib/api'
-
-// Enum definitions
 enum Position {
   PG = 'PG',
   SG = 'SG',
@@ -23,8 +21,6 @@ enum Tendency {
   THREE_POINT = '3pt pointer',
   MIDRANGE = 'Midrange'
 }
-
-// Player interface adapted from backend
 interface Player {
   id: string
   name: string
